@@ -293,7 +293,7 @@ def fit_peaks(hrdata, rol_mean, sample_rate, bpmmin=40, bpmmax=180, working_data
         rrsd.append([working_data['rrsd'], bpm, ma_perc])
 
     for _rrsd, _bpm, _ma_perc in rrsd:
-        if (_rrsd > 0.1) and ((bpmmin <= _bpm <= bpmmax)):
+        if (_rrsd > 10) and ((bpmmin <= _bpm <= bpmmax)):
             valid_ma.append([_rrsd, _ma_perc])
 
     if len(valid_ma) > 0:
