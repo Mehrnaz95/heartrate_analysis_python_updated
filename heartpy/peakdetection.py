@@ -281,7 +281,7 @@ def fit_peaks(hrdata, rol_mean, sample_rate, bpmmin=40, bpmmax=180, working_data
     '''
 
     # moving average values to test
-    ma_perc_list = [5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 200, 300]
+    ma_perc_list = [-10,-5,-3,-2,-1,0,1,2,3,5, 10, 15, 20]
 
     rrsd = []
     valid_ma = []
