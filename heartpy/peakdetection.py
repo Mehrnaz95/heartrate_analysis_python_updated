@@ -415,7 +415,7 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
     k = 0
     while k < len_rem_idx:
         for i in rem_idx:
-             if i > 0 and (i - 1) in rem_idx:
+             if i > 0 and (i - 1) in rem_idx and :
                       # Recalculate RR interval for peak i
                       j = i - 1
                       cumulative_distance = rr_arr[i-1]
