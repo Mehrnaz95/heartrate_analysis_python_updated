@@ -415,14 +415,14 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
     k = 0
     while k < len_rem_idx:
         for i in rem_idx:
-             if i > 0 and (i - 1) in rem_idx and :
+             if i > 0 and (i - 1) in rem_idx and ybeat[i-1]<= ybeat[i]:
                       # Recalculate RR interval for peak i
                       j = i - 1
                       cumulative_distance = rr_arr[i-1]
                       while j >= 0 and j in rem_idx:
                            cumulative_distance += rr_arr[j-1]
                            j -= 1
-                      mod_rr_arr[i] = cumulative_distance
+                      mod_rr_arr[i-1] = cumulative_distance
                       rem_idx = np.where((mod_rr_arr <= lower_threshold) | (mod_rr_arr >= upper_threshold))[0] + 1
                       break  
         k += 1
