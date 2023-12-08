@@ -436,20 +436,13 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
     working_data['removed_beats_y'] = ybeat[mod_rem_idx]
 
     if reject_segmentwise:
-        working_data = check_binary_quality(peaklist, binary_peaklist, working_data=working_data)
+        working_data = check_binary_quality(peaklist, working_data['binary_peaklist'],
+                                            working_data=working_data)
 
-    # Recalculate RR intervals and other measures based on updated binary peaklist
-    valid_peaks = peaklist[binary_peaklist == 1]
-    working_data['RR_list_cor'] = np.diff(valid_peaks)
-    working_data['RR_diff'] = np.abs(np.diff(working_data['RR_list_cor']))
-    working_data['RR_sqdiff'] = np.power(working_data['RR_diff'], 2)
-
-    # Update measures like BPM, SDNN, RMSSD etc.
-    working_data['bpm'] = 60000 / np.mean(working_data['RR_list_cor'])
-    working_data['sdnn'] = np.std(working_data['RR_list_cor'])
-    working_data['rmssd'] = np.sqrt(np.mean(working_data['RR_sqdiff']))
+    working_data = update_rr(working_data=working_data)
 
     return working_data
+
 
 
 def check_binary_quality(peaklist, binary_peaklist, maxrejects=3, working_data={}):
