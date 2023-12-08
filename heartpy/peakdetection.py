@@ -428,7 +428,7 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
         k += 1
 
     # Update binary peaklist based on modified RR intervals
-    mod_rem_idx = np.where((mod_rr_arr <= lower_threshold) | (mod_rr_arr >= upper_threshold))[0]
+    mod_rem_idx = np.where((mod_rr_arr <= lower_threshold) | (mod_rr_arr >= upper_threshold))[0]+1
     binary_peaklist = np.array([0 if i in mod_rem_idx else 1 for i in range(len(peaklist))])
 
     working_data['binary_peaklist'] = binary_peaklist
