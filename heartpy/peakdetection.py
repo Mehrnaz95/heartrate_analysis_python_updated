@@ -309,72 +309,145 @@ outside of bpmmin<->bpmmax constraints\n- no detectable heart rate present in si
 rate data, consider filtering and/or scaling first.\n----------------\n')
 
 
+
+
+# def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data={}):
+#     '''find anomalous peaks.
+
+#     Funcion that checks peaks for outliers based on anomalous peak-peak distances and corrects
+#     by excluding them from further analysis.
+
+#     Parameters
+#     ----------
+#     rr_arr : 1d array or list
+#         list or array containing peak-peak intervals
+
+#     peaklist : 1d array or list
+#         list or array containing detected peak positions
+
+#     ybeat : 1d array or list
+#         list or array containing corresponding signal values at
+#         detected peak positions. Used for plotting functionality
+#         later on.
+
+#     reject_segmentwise : bool
+#         if set, checks segments per 10 detected peaks. Marks segment
+#         as rejected if 30% of peaks are rejected.
+#         default : False
+
+#     working_data : dict
+#         dictionary object that contains all heartpy's working data (temp) objects.
+#         will be created if not passed to function
+
+#     Returns
+#     -------
+#     working_data : dict
+#         working_data dictionary object containing all of heartpy's temp objects
+
+#     Examples
+#     --------
+#     Part of peak detection pipeline. No standalone examples exist. See docstring
+#     for hp.process() function for more info
+#     '''
+
+#     rr_arr = np.array(rr_arr)
+#     peaklist = np.array(peaklist)
+#     ybeat = np.array(ybeat)
+
+#     # define RR range as mean +/- 30%, with a minimum of 300
+#     mean_rr = np.mean(rr_arr)
+#     thirty_perc = 0.3 * mean_rr
+#     if thirty_perc <= 300:
+#         upper_threshold = mean_rr + 300
+#         lower_threshold = mean_rr - 300
+#     else:
+#         upper_threshold = mean_rr + thirty_perc
+#         lower_threshold = mean_rr - thirty_perc
+
+#     # identify peaks to exclude based on RR interval
+#     rem_idx = np.where((rr_arr <= lower_threshold) | (rr_arr >= upper_threshold))[0] + 1
+
+#     working_data['removed_beats'] = peaklist[rem_idx]
+#     working_data['removed_beats_y'] = ybeat[rem_idx]
+#     working_data['binary_peaklist'] = np.asarray([0 if x in working_data['removed_beats']
+#                                                   else 1 for x in peaklist])
+
+#     if reject_segmentwise:
+#         working_data = check_binary_quality(peaklist, working_data['binary_peaklist'],
+#                                             working_data=working_data)
+
+#     working_data = update_rr(working_data=working_data)
+
+#     return working_data
+
+
+
 def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data={}):
-    '''find anomalous peaks.
+    '''Find anomalous peaks with improved RR interval calculation.
 
-    Funcion that checks peaks for outliers based on anomalous peak-peak distances and corrects
-    by excluding them from further analysis.
-
-    Parameters
-    ----------
-    rr_arr : 1d array or list
-        list or array containing peak-peak intervals
-
-    peaklist : 1d array or list
-        list or array containing detected peak positions
-
-    ybeat : 1d array or list
-        list or array containing corresponding signal values at
-        detected peak positions. Used for plotting functionality
-        later on.
-
+    Parameters:
+    rr_arr : list or np.array
+        List or array containing peak-peak intervals.
+    peaklist : list or np.array
+        List or array containing detected peak positions.
+    ybeat : list or np.array
+        List or array containing corresponding signal values at detected peak positions.
     reject_segmentwise : bool
-        if set, checks segments per 10 detected peaks. Marks segment
-        as rejected if 30% of peaks are rejected.
-        default : False
-
+        If set, checks segments per 10 detected peaks. Marks segment as rejected if 30% of peaks are rejected.
     working_data : dict
-        dictionary object that contains all heartpy's working data (temp) objects.
-        will be created if not passed to function
-
-    Returns
-    -------
-    working_data : dict
-        working_data dictionary object containing all of heartpy's temp objects
-
-    Examples
-    --------
-    Part of peak detection pipeline. No standalone examples exist. See docstring
-    for hp.process() function for more info
+        Dictionary object that contains all heartpy's working data (temp) objects.
     '''
 
     rr_arr = np.array(rr_arr)
     peaklist = np.array(peaklist)
     ybeat = np.array(ybeat)
 
-    # define RR range as mean +/- 30%, with a minimum of 300
+    # Define RR range as mean +/- 30%, with a minimum of 300
     mean_rr = np.mean(rr_arr)
-    thirty_perc = 0.3 * mean_rr
-    if thirty_perc <= 300:
-        upper_threshold = mean_rr + 300
-        lower_threshold = mean_rr - 300
-    else:
-        upper_threshold = mean_rr + thirty_perc
-        lower_threshold = mean_rr - thirty_perc
+    lower_threshold = max(mean_rr - 0.3 * mean_rr, 300)
+    upper_threshold = mean_rr + 0.3 * mean_rr
 
-    # identify peaks to exclude based on RR interval
-    rem_idx = np.where((rr_arr <= lower_threshold) | (rr_arr >= upper_threshold))[0] + 1
+    # Identify peaks to exclude based on RR interval
+    rem_idx = np.where((rr_arr <= lower_threshold) | (rr_arr >= upper_threshold))[0]+1
+    mod_rr_arr = rr_arr.copy()
 
-    working_data['removed_beats'] = peaklist[rem_idx]
-    working_data['removed_beats_y'] = ybeat[rem_idx]
-    working_data['binary_peaklist'] = np.asarray([0 if x in working_data['removed_beats']
-                                                  else 1 for x in peaklist])
+    len_rem_idx=len(rem_idx)       
+    k = 0
+    while k < len_rem_idx:
+        for i in rem_idx:
+             if i > 0 and (i - 1) in rem_idx:
+                      # Recalculate RR interval for peak i
+                      j = i - 1
+                      cumulative_distance = rr_arr[i-1]
+                      while j >= 0 and j in rem_idx:
+                           cumulative_distance += rr_arr[j-1]
+                           j -= 1
+                      mod_rr_arr[i] = cumulative_distance
+                      rem_idx = np.where((mod_rr_arr <= lower_threshold) | (mod_rr_arr >= upper_threshold))[0] + 1
+                      break  
+        k += 1
+
+    # Update binary peaklist based on modified RR intervals
+    mod_rem_idx = np.where((mod_rr_arr <= lower_threshold) | (mod_rr_arr >= upper_threshold))[0]
+    binary_peaklist = np.array([0 if i in mod_rem_idx else 1 for i in range(len(peaklist))])
+
+    working_data['binary_peaklist'] = binary_peaklist
+    working_data['removed_beats'] = peaklist[mod_rem_idx]
+    working_data['removed_beats_y'] = ybeat[mod_rem_idx]
 
     if reject_segmentwise:
-        working_data = check_binary_quality(peaklist, working_data['binary_peaklist'],
-                                            working_data=working_data)
+        working_data = check_binary_quality(peaklist, binary_peaklist, working_data=working_data)
 
-    working_data = update_rr(working_data=working_data)
+    # Recalculate RR intervals and other measures based on updated binary peaklist
+    valid_peaks = peaklist[binary_peaklist == 1]
+    working_data['RR_list_cor'] = np.diff(valid_peaks)
+    working_data['RR_diff'] = np.abs(np.diff(working_data['RR_list_cor']))
+    working_data['RR_sqdiff'] = np.power(working_data['RR_diff'], 2)
+
+    # Update measures like BPM, SDNN, RMSSD etc.
+    working_data['bpm'] = 60000 / np.mean(working_data['RR_list_cor'])
+    working_data['sdnn'] = np.std(working_data['RR_list_cor'])
+    working_data['rmssd'] = np.sqrt(np.mean(working_data['RR_sqdiff']))
 
     return working_data
 
