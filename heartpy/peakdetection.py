@@ -281,7 +281,7 @@ def fit_peaks(hrdata, rol_mean, sample_rate, bpmmin=40, bpmmax=180, working_data
     '''
 
     # moving average values to test
-    ma_perc_list = [3,4, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 200, 300]
+    ma_perc_list = [0,1,2,3,4, 5, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 150, 200, 300]
 
     rrsd = []
     valid_ma = []
@@ -415,7 +415,8 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
     # upper_threshold = mean_rr + 0.3 * mean_rr
 
     # Identify peaks to exclude based on RR interval
-    rem_idx = np.where((rr_arr <= lower_threshold) | (rr_arr >= upper_threshold))[0]+1
+    #rem_idx = np.where((rr_arr <= lower_threshold) | (rr_arr >= upper_threshold))[0]+1
+    rem_idx = np.where((rr_arr <= lower_threshold))[0]+1
     mod_rr_arr = rr_arr.copy()
 
     len_rem_idx=len(rem_idx)       
