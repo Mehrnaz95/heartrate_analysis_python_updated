@@ -413,7 +413,7 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
         lower_threshold = mean_rr - 300
     elif mean_rr< 400:
         upper_threshold = mean_rr + 300
-        lower_threshold = 300
+        lower_threshold = 350
     else:
         upper_threshold = mean_rr + thirty_perc
         lower_threshold = mean_rr - thirty_perc
