@@ -408,10 +408,10 @@ def check_peaks(rr_arr, peaklist, ybeat, reject_segmentwise=False, working_data=
     mean_rr = np.mean(rr_arr)
     thirty_perc = 0.3 * mean_rr
     
-    if mean_rr>= 400 and thirty_perc <= 300:
+    if mean_rr>= 550 and thirty_perc <= 300:
         upper_threshold = mean_rr + 300
         lower_threshold = mean_rr - 300
-    elif mean_rr< 500:
+    elif mean_rr< 550:
         upper_threshold = mean_rr + 300
         lower_threshold = 400
     else:
