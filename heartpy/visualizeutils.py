@@ -120,7 +120,7 @@ def plotter(working_data, measures, show=True, figsize=None,
     else:
         return fig
 
-def segment_plotter(working_data, measures, title='Heart Rate Signal Peak Detection',
+def segment_plotter(working_data, measures, title='',
                     figsize=(6, 6), path='', start=0, end=None, step=1): # pragma: no cover
     '''plots analysis results
 
